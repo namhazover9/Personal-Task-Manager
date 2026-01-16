@@ -17,6 +17,7 @@ public class MapperUtil {
         dto.setCompleted(task.isCompleted());
         if (task.getCategory() != null) {
             dto.setCategoryId(task.getCategory().getId());
+            dto.setCategoryName(task.getCategory().getName());
         }
         return dto;
     }

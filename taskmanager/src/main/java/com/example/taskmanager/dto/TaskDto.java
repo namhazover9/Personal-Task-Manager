@@ -25,4 +25,6 @@ public class TaskDto {
 
     private Long categoryId;
 
+    private String categoryName;
+
 }
