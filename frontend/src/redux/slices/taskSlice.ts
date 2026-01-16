@@ -7,12 +7,22 @@ interface TaskState {
   tasks: TaskPage | null;
   loading: boolean;
   error: string | null;
+  filter: TaskFilter;
 }
 
 const initialState: TaskState = {
   tasks: null,
   loading: false,
   error: null,
+  filter: {
+    page: 0,
+    size: 10,
+    sortBy: 'createdAt',
+    sortDir: 'desc',
+    keyword: '',
+    status: undefined,
+    categoryId: undefined,
+  },
 };
 
 export const fetchTasks = createAsyncThunk<TaskPage, TaskFilter>(
@@ -66,7 +76,14 @@ export const removeTask = createAsyncThunk<number, number>(
 const taskSlice = createSlice({
   name: 'task',
   initialState,
-  reducers: {},
+  reducers: {
+    setFilter: (state, action) => {
+      state.filter = { ...state.filter, ...action.payload };
+    },
+    resetFilter: (state) => {
+      state.filter = initialState.filter;
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchTasks.pending, (state) => {
@@ -127,5 +144,7 @@ const taskSlice = createSlice({
       });
   },
 });
+
+export const { setFilter, resetFilter } = taskSlice.actions;
 
 export default taskSlice.reducer;

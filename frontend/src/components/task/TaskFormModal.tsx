@@ -158,7 +158,7 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ open, onClose, task }) =>
             <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
               <Box sx={{ flex: 1 }}>
                 <FormInput name="categoryId" label="Danh mục" select disabled={catLoading}>
-                  <MenuItem value="">Không chọn</MenuItem>
+                  {/* <MenuItem value="">Không chọn</MenuItem> */}
                   {categories.map((cat) => (
                     <MenuItem key={cat.id} value={cat.id}>
                       {cat.name}

@@ -10,6 +10,7 @@ import {
     Chip,
     IconButton,
     Tooltip,
+    Typography,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -33,6 +34,36 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks, onEdit, onDelete }) => {
         }
     };
 
+    const getDaysLeft = (deadline: string | Date) => {
+        const now = new Date();
+        const end = new Date(deadline);
+
+        // Reset giờ để tránh lỗi lệch timezone
+        now.setHours(0, 0, 0, 0);
+        end.setHours(0, 0, 0, 0);
+
+        const diffTime = end.getTime() - now.getTime();
+
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    const getDeadlineColor = (task: Task) => {
+        if (!task.deadline) return 'text.secondary';
+
+        // Nếu đã hoàn thành → màu trung tính / xanh
+        if (task.status === 'COMPLETED') {
+            return 'success.main';
+        }
+
+        const daysLeft = getDaysLeft(task.deadline);
+
+        if (daysLeft < 0) return 'error.main';      // Quá hạn
+        if (daysLeft === 1) return 'warning.main';  // Còn 1 ngày
+        return 'text.primary';
+    }
+
+
+
     return (
         <TableContainer component={Paper} elevation={0}
             sx={{ width: '100%', borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
@@ -49,19 +80,37 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks, onEdit, onDelete }) => {
             }}>
                 <TableHead sx={{ bgcolor: 'background.neutral' }}>
                     <TableRow>
-                        <TableCell sx={{ pl: 3, fontWeight: 600, width: '25%' }} align="center">Title</TableCell>
-                        <TableCell sx={{ fontWeight: 600, width: '30%' }} align="center">Description</TableCell>
+                        <TableCell sx={{ pl: 3, fontWeight: 600, width: '20%' }} align="center">Title</TableCell>
+                        <TableCell sx={{ fontWeight: 600, width: '25%' }} align="center">Description</TableCell>
+                        <TableCell sx={{ fontWeight: 600, width: '10%' }} align="center">Category</TableCell>
                         <TableCell sx={{ fontWeight: 600, width: '15%' }} align="center">Status</TableCell>
                         <TableCell sx={{ fontWeight: 600, width: '15%' }} align="center">Deadline</TableCell>
                         <TableCell sx={{ pr: 3, fontWeight: 600, width: '15%' }} align="center">Actions</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {tasks.map((task) => (
-                        <TableRow key={task.id} hover>
+                    {tasks.map((task, index) => (
+                        <TableRow key={task.id} sx={{
+                            '&:nth-of-type(odd)': {
+                                backgroundColor: 'action.hover',
+                            },
+                            '&:hover': {
+                                backgroundColor: 'action.selected',
+                                cursor: 'pointer',
+                            },
+                        }}>
                             <TableCell sx={{ fontWeight: 600 }}>{task.title}</TableCell>
                             <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {task.description || '-'}
+                            </TableCell>
+                            <TableCell align="center">
+                                {/* <Chip
+                                    label={task.categoryName || 'Uncategorized'}
+                                    size="small"
+                                    variant="outlined"
+                                    color={task.categoryName ? 'info' : 'default'}
+                                /> */}
+                                {task.categoryName}
                             </TableCell>
                             <TableCell align="center">
                                 <Chip
@@ -73,7 +122,18 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks, onEdit, onDelete }) => {
                                 />
                             </TableCell>
                             <TableCell align="center">
-                                {task.deadline ? new Date(task.deadline).toLocaleDateString() : '-'}
+                                {task.deadline ? (
+                                    <Typography
+                                        sx={{
+                                            fontWeight: 600,
+                                            color: getDeadlineColor(task),
+                                        }}
+                                    >
+                                        {new Date(task.deadline).toLocaleDateString()}
+                                    </Typography>
+                                ) : (
+                                    '-'
+                                )}
                             </TableCell>
                             <TableCell align="center">
                                 <Tooltip title="Edit">
@@ -91,7 +151,7 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks, onEdit, onDelete }) => {
                     ))}
                     {tasks.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
+                            <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
                                 No tasks found.
                             </TableCell>
                         </TableRow>

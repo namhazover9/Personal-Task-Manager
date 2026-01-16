@@ -16,6 +16,7 @@ import {
   Link,
 } from '@mui/material';
 import FormInput from '../components/common/FormInput';
+import AuthLayout from '../layouts/AuthLayout';
 
 // Schema validation
 const schema = yup.object({
@@ -53,38 +54,34 @@ const Register: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="xs">
-      <Paper elevation={3} sx={{ mt: 8, p: 4, borderRadius: 2 }}>
-        <Typography variant="h4" align="center" gutterBottom>
-          Đăng Ký
-        </Typography>
+    <AuthLayout title="Đăng Ký"
+      subtitle="Chưa có tài khoản? Đăng ký ngay! 👏"
+    >
+      <FormProvider {...methods} >
+        <Box component="form" onSubmit={methods.handleSubmit(onSubmit)} noValidate >
+          <FormInput name="username" label="Tên đăng nhập" autoFocus />
+          <FormInput name="email" label="Email" type="email" />
+          <FormInput name="password" label="Mật khẩu" type="password" />
 
-        <FormProvider {...methods}>
-          <Box component="form" onSubmit={methods.handleSubmit(onSubmit)} noValidate>
-            <FormInput name="username" label="Tên đăng nhập" autoFocus />
-            <FormInput name="email" label="Email" type="email" />
-            <FormInput name="password" label="Mật khẩu" type="password" />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+            disabled={loading}
+          >
+            {loading ? 'Đang đăng ký...' : 'Đăng ký'}
+          </Button>
 
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-              disabled={loading}
-            >
-              {loading ? 'Đang đăng ký...' : 'Đăng ký'}
-            </Button>
-
-            <Typography align="center">
-              Đã có tài khoản?{' '}
-              <Link href="/login" underline="hover">
-                Đăng nhập ngay
-              </Link>
-            </Typography>
-          </Box>
-        </FormProvider>
-      </Paper>
-    </Container>
+          <Typography align="center">
+            Đã có tài khoản?{' '}
+            <Link href="/login" underline="hover">
+              Đăng nhập ngay
+            </Link>
+          </Typography>
+        </Box>
+      </FormProvider>
+    </AuthLayout>
   );
 };
 

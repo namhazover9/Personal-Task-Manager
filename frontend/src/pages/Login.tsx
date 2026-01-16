@@ -16,6 +16,8 @@ import {
   Link,
 } from '@mui/material';
 import FormInput from '../components/common/FormInput';
+import AuthLayout from '../layouts/AuthLayout';
+
 
 // Schema validation với yup
 const schema = yup.object({
@@ -29,6 +31,7 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const { loading } = useSelector((state: RootState) => state.auth);
+
 
   // Khởi tạo react-hook-form với yup resolver
   const methods = useForm({
@@ -52,39 +55,43 @@ const Login: React.FC = () => {
 
   // Giao diện trang đăng nhập
   return (
-    <Container maxWidth="xs">
-      <Paper elevation={3} sx={{ mt: 8, p: 4, borderRadius: 2 }}>
-        <Typography variant="h4" align="center" gutterBottom>
-          Đăng Nhập
-        </Typography>
+    <AuthLayout
+      title="Đăng Nhập"
+      subtitle="Chào mừng bạn quay trở lại 👋"
+    >
+      <FormProvider {...methods}>
+        <Box component="form" onSubmit={methods.handleSubmit(onSubmit)} noValidate>
+          <FormInput name="username" label="Tên đăng nhập" autoFocus />
+          <FormInput name="password" label="Mật khẩu" type="password" />
 
-        {/* FormProvider để cung cấp context form cho các input con */}
-        <FormProvider {...methods}>
-          <Box component="form" onSubmit={methods.handleSubmit(onSubmit)} noValidate>
-            <FormInput name="username" label="Tên đăng nhập" autoFocus />
-            <FormInput name="password" label="Mật khẩu" type="password" />
+          <Button
+            type="submit"
+            fullWidth
+            size="large"
+            variant="contained"
+            sx={{
+              mt: 3,
+              mb: 2,
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 600,
+            }}
+            disabled={loading}
+          >
+            {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+          </Button>
 
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-              disabled={loading}
-            >
-              {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-            </Button>
-
-            <Typography align="center">
-              Chưa có tài khoản?{' '}
-              <Link href="/register" underline="hover">
-                Đăng ký ngay
-              </Link>
-            </Typography>
-          </Box>
-        </FormProvider>
-      </Paper>
-    </Container>
+          <Typography align="center">
+            Chưa có tài khoản?{' '}
+            <Link href="/register" underline="hover">
+              Đăng ký ngay
+            </Link>
+          </Typography>
+        </Box>
+      </FormProvider>
+    </AuthLayout>
   );
+
 };
 
 export default Login;

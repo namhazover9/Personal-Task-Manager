@@ -8,6 +8,7 @@ export interface Task {
   status: TaskStatus;
   completed: boolean;
   categoryId?: number;
+  categoryName?: string;
 }
 
 export interface TaskFilter {
