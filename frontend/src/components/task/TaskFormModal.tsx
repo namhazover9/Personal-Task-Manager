@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { format, parseISO } from 'date-fns';
 import useToast from '../../hooks/useToast';
 import { useForm, FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -63,9 +64,9 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ open, onClose, task }) =>
     }
     // Reset form với data từ task (nếu edit)
     if (task) {
-      // Format deadline về YYYY-MM-DD nếu có
+      // Format deadline về YYYY-MM-DD nếu có (không dùng toISOString để tránh lệch timezone)
       const formattedDeadline = task.deadline
-        ? new Date(task.deadline).toISOString().split('T')[0]  // chỉ lấy phần ngày
+        ? format(parseISO(task.deadline), 'yyyy-MM-dd')
         : null;
       methods.reset({
         title: task.title,
@@ -96,13 +97,14 @@ const TaskFormModal: React.FC<TaskFormModalProps> = ({ open, onClose, task }) =>
       status: data.status as TaskStatus,
       completed: data.completed || false,
       categoryId: data.categoryId || undefined,
-      deadline: data.deadline ? new Date(data.deadline).toISOString() : undefined
+      // Giữ nguyên date string YYYY-MM-DD, backend sẽ parse
+      deadline: data.deadline ? `${data.deadline}T23:59:59` : undefined
     };
 
-    // Fix: Ensure deadline is always full ISO string (backend expects LocalDateTime)
+    // Gửi deadline dưới dạng LocalDateTime string (YYYY-MM-DDTHH:MM:SS)
     const taskData = {
       ...data,
-      deadline: data.deadline ? new Date(data.deadline).toISOString() : null,
+      deadline: data.deadline ? `${data.deadline}T23:59:59` : null,
     };
 
     let result;

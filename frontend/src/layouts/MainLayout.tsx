@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import useToast from '../hooks/useToast';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
     Box,
     Drawer,
@@ -23,6 +23,8 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import CategoryIcon from '@mui/icons-material/Category';
+import ChatIcon from '@mui/icons-material/Chat';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useDispatch } from 'react-redux';
@@ -30,6 +32,12 @@ import { logout } from '../redux/slices/authSlice';
 import { AppDispatch } from '../redux/store';
 
 const DRAWER_WIDTH = 280;
+
+const menuItems = [
+    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+    { text: 'Categories', icon: <CategoryIcon />, path: '/categories' },
+    { text: 'Chat', icon: <ChatIcon />, path: '/chat' },
+];
 
 export default function MainLayout() {
     const theme = useTheme();
@@ -40,6 +48,7 @@ export default function MainLayout() {
 
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
@@ -57,6 +66,13 @@ export default function MainLayout() {
         dispatch(logout());
         toast.success('Logged out successfully');
         handleMenuClose();
+    };
+
+    const handleNavigation = (path: string) => {
+        navigate(path);
+        if (isMobile) {
+            setMobileOpen(false);
+        }
     };
 
     const drawerContent = (
@@ -86,23 +102,28 @@ export default function MainLayout() {
             <Divider />
 
             <List sx={{ flexGrow: 1, px: 2, pt: 2 }}>
-                <ListItem disablePadding sx={{ mb: 1 }}>
-                    <ListItemButton
-                        selected
-                        sx={{
-                            borderRadius: 1.5,
-                            bgcolor: 'action.selected',
-                            '&.Mui-selected': { bgcolor: 'primary.lighter', color: 'primary.dark' },
-                        }}
-                    >
-                        <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
-                            <DashboardIcon />
-                        </ListItemIcon>
-                        <ListItemText primary="Dashboard" primaryTypographyProps={{ fontWeight: 600 }} />
-                    </ListItemButton>
-                </ListItem>
-
-                {/* Add more menu items here */}
+                {menuItems.map((item) => {
+                    const isSelected = location.pathname === item.path ||
+                        (item.path === '/dashboard' && location.pathname === '/');
+                    return (
+                        <ListItem key={item.text} disablePadding sx={{ mb: 1 }}>
+                            <ListItemButton
+                                selected={isSelected}
+                                onClick={() => handleNavigation(item.path)}
+                                sx={{
+                                    borderRadius: 1.5,
+                                    '&.Mui-selected': { bgcolor: 'primary.lighter', color: 'primary.dark' },
+                                    '&:hover': { bgcolor: 'action.hover' },
+                                }}
+                            >
+                                <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
+                                    {item.icon}
+                                </ListItemIcon>
+                                <ListItemText primary={item.text} primaryTypographyProps={{ fontWeight: 600 }} />
+                            </ListItemButton>
+                        </ListItem>
+                    );
+                })}
             </List>
 
             <Box sx={{ p: 2 }}>
@@ -219,7 +240,7 @@ export default function MainLayout() {
                     mt: 8 // Toolbar height
                 }}
             >
-                <Container maxWidth="xl">
+                <Container maxWidth={false}>
                     <Outlet />
                 </Container>
             </Box>

@@ -2,10 +2,12 @@ import { Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import MainLayout from '../layouts/MainLayout';
 
-// Các trang (tạm thời import placeholder, sau này tạo thật)
+// Các trang
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
+import Categories from '../pages/Categories';
+import Chat from '../pages/Chat';
 import NotFound from '../pages/NotFound';
 
 const AppRoutes = () => {
@@ -20,7 +22,8 @@ const AppRoutes = () => {
         <Route element={<MainLayout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          {/* Sau này thêm route khác như /categories, /profile... */}
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/chat" element={<Chat />} />
         </Route>
       </Route>
 
