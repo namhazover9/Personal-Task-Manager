@@ -10,6 +10,9 @@ import com.example.taskmanager.repository.CategoryRepository;
 import com.example.taskmanager.repository.TaskRepository;
 import com.example.taskmanager.util.MapperUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,13 +26,18 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TaskService {
 
     private final TaskRepository taskRepository;
     private final CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true)
+    // Note: Page<T> doesn't serialize well with Redis, so we skip caching for paginated results
     public Page<TaskDto> getTasksWithFilters(TaskFilterRequest filter, User user) {
+        log.debug("Fetching tasks from database for user: {} with filter: page={}, size={}",
+                user.getId(), filter.getPage(), filter.getSize());
+        
         String sortBy = Optional.ofNullable(filter.getSortBy())
                 .filter(s -> !s.isBlank())
                 .orElse("updatedAt");
@@ -64,6 +72,7 @@ public class TaskService {
 
     @Transactional
     public TaskDto saveTask(Long id, TaskDto dto, User user) {
+        log.info("Saving task");
         Task task;
 
         if (id == null) {
@@ -107,6 +116,7 @@ public class TaskService {
 
     @Transactional
     public void deleteTask(Long id, User user) {
+        log.info("Deleting task");
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 

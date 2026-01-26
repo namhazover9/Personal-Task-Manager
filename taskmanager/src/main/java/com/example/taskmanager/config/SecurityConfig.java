@@ -31,6 +31,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()  // Đăng ký/đăng nhập public
                         .requestMatchers("/api/tasks/**").permitAll()  // Đăng ký/đăng nhập public
                         .requestMatchers("/api/categories/**").permitAll()  // Đăng ký/đăng nhập public
+                        .requestMatchers("/ws/**").permitAll() // WebSocket public endpoint
                         .anyRequest().authenticated()  // Các API khác cần auth
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
