@@ -67,6 +67,24 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.isAuthenticated = true;
         localStorage.setItem('token', action.payload.token);
+
+        try {
+          // Decode JWT to get username
+          const base64Url = action.payload.token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          }).join(''));
+
+          const payload = JSON.parse(jsonPayload);
+          const username = payload.sub; // Subject usually holds username
+
+          if (username) {
+            localStorage.setItem('user', JSON.stringify({ username }));
+          }
+        } catch (e) {
+          console.error("Failed to decode token", e);
+        }
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;

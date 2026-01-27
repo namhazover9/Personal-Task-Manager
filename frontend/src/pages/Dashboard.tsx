@@ -38,7 +38,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <Box>
+    <Box sx={{ width: '100%', flexGrow: 1 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" fontWeight="bold">
           My Tasks

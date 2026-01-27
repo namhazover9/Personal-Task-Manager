@@ -236,13 +236,14 @@ export default function MainLayout() {
                 sx={{
                     flexGrow: 1,
                     p: 3,
-                    width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
-                    mt: 8 // Toolbar height
+                    width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` },
+                    mt: 8,
+                    overflowX: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column'
                 }}
             >
-                <Container maxWidth={false}>
-                    <Outlet />
-                </Container>
+                <Outlet />
             </Box>
         </Box>
     );
