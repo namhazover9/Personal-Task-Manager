@@ -8,6 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ChatRepository extends JpaRepository<ChatMessage, Long> {
-    // Custom query to find last N messages if needed
-    List<ChatMessage> findTop50ByOrderByTimestampDesc();
+    List<ChatMessage> findByConversationIdOrderByTimestampAsc(Long conversationId);
 }

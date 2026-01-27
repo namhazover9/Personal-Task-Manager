@@ -7,8 +7,8 @@ import com.example.taskmanager.entity.User;
 import com.example.taskmanager.repository.CategoryRepository;
 import com.example.taskmanager.repository.TaskRepository;
 import com.example.taskmanager.repository.UserRepository;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -16,21 +16,22 @@ import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
-public class DataSeeder {
+public class DataSeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final TaskRepository taskRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @PostConstruct
-    public void seed() {
+    @Override
+    public void run(String... args) {
         if (userRepository.count() == 0) {
             // Tạo user mẫu
             User demoUser = User.builder()
                     .username("demo")
                     .password(passwordEncoder.encode("demo123"))
                     .email("demo@example.com")
+                    // Alias và phone có thể null, không cần set
                     .build();
             userRepository.save(demoUser);
 

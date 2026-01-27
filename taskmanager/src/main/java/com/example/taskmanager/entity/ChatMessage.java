@@ -22,8 +22,13 @@ public class ChatMessage {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
-    private String sender; // Simplify: just store username/email for now, or link to User entity
+    @ManyToOne
+    @JoinColumn(name = "sender_id", nullable = false)
+    private User sender;
+
+    @ManyToOne
+    @JoinColumn(name = "conversation_id", nullable = false)
+    private Conversation conversation;
 
     @CreationTimestamp
     private LocalDateTime timestamp;

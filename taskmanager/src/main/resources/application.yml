@@ -6,11 +6,14 @@
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: update # Fallback: Let Hibernate create tables since Flyway baseline might have skipped V1
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true # Important for existing non-empty databases
   data:
     redis:
       host: localhost

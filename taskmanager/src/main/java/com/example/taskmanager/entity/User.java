@@ -31,6 +31,12 @@ public class User implements UserDetails {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @Column(unique = true)
+    private String alias;
+
+    @Column(unique = true)
+    private String phoneNumber;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Task> tasks = new HashSet<>();
 

@@ -1,63 +1,75 @@
 package com.example.taskmanager.controller;
 
+import com.example.taskmanager.dto.ChatMessageDto;
+import com.example.taskmanager.dto.SendMessageDto;
 import com.example.taskmanager.entity.ChatMessage;
-import com.example.taskmanager.repository.ChatRepository;
-import tools.jackson.databind.ObjectMapper;
+import com.example.taskmanager.entity.User;
+import com.example.taskmanager.repository.UserRepository;
+import com.example.taskmanager.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.security.Principal;
 
 @Controller
 @RequiredArgsConstructor
 @Slf4j
 public class ChatWebSocketController {
 
-    private final KafkaTemplate<String, String> kafkaTemplate;
     private final SimpMessagingTemplate simpMessagingTemplate;
-    private final ChatRepository chatRepository;
-    private final ObjectMapper objectMapper;
+    private final ChatService chatService;
+    private final UserRepository userRepository;
 
-    private static final String TOPIC = "chat-topic";
-
-    // 1. Client sends message to /app/chat.sendMessage
     @MessageMapping("/chat.sendMessage")
-    public void sendMessage(ChatMessage message) {
+    @Transactional
+    public void sendMessage(@Payload SendMessageDto messageRequest, Principal principal) {
         try {
-            message.setTimestamp(LocalDateTime.now());
+            String username = principal.getName();
+            User sender = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
             
-            // Save to DB
-            chatRepository.save(message);
+            ChatMessage saved = chatService.saveMessage(
+                    messageRequest.getConversationId(), 
+                    messageRequest.getContent(), 
+                    sender
+            );
 
-            // Serialize and send to Kafka
-            String jsonMessage = objectMapper.writeValueAsString(message);
-            log.info("Sending message to Kafka topic {}: {}", TOPIC, jsonMessage);
-            kafkaTemplate.send(TOPIC, jsonMessage);
+            ChatMessageDto responseDto = ChatMessageDto.builder()
+                    .id(saved.getId())
+                    .content(saved.getContent())
+                    .senderId(sender.getId())
+                    .senderName(sender.getUsername())
+                    .conversationId(saved.getConversation().getId())
+                    .timestamp(saved.getTimestamp())
+                    .build();
+
+            // Broadcast to all participants
+            // Broadcast to all participants
+            saved.getConversation().getParticipants().forEach(p -> {
+                String targetUsername = p.getUser().getUsername();
+                log.info("Processing message for participant: {}", targetUsername);
+                
+                // SimpMessagingTemplate automatically prepends "/user/{username}" 
+                // to the destination "/queue/messages"
+                try {
+                    simpMessagingTemplate.convertAndSendToUser(
+                            targetUsername, 
+                            "/queue/messages", 
+                            responseDto
+                    );
+                    log.info("Sent WS message to user: {}", targetUsername);
+                } catch (Exception ex) {
+                    log.error("Failed to send WS message to user: {}", targetUsername, ex);
+                }
+            });
             
         } catch (Exception e) {
             log.error("Error sending message", e);
-        }
-    }
-
-    // 2. Listen to Kafka topic and broadcast to all WebSocket clients subscribed to /topic/public
-    @KafkaListener(topics = TOPIC, groupId = "chat-group")
-    public void listen(String message) {
-        try {
-            log.info("Received message from Kafka: {}", message);
-            
-            // Deserialize (optional if we just want to pass string, but good practice to validate)
-            ChatMessage chatMessage = objectMapper.readValue(message, ChatMessage.class);
-
-            // Broadcast to WebSocket clients
-            simpMessagingTemplate.convertAndSend("/topic/public", chatMessage);
-            
-        } catch (Exception e) {
-            log.error("Error processing Kafka message", e);
         }
     }
 }
